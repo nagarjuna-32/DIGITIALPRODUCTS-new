@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Database Service
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: dv_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: digital_vault
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Backend Express API Service
+  backend_api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dv_backend_api
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      DATABASE_URL: "postgresql://postgres:postgres@postgres_db:5432/digital_vault?schema=public"
+      JWT_SECRET: "super-secret-jwt-key-replace-in-production-vault"
+      FRONTEND_URL: "http://localhost:3000"
+      RAZORPAY_KEY_ID: "rzp_test_mockkeyid123"
+      RAZORPAY_KEY_SECRET: "mockkeysecret123"
+      CLOUDFLARE_R2_ACCOUNT_ID: "mockaccountid123"
+      CLOUDFLARE_R2_ACCESS_KEY_ID: "mockaccesskeyid123"
+      CLOUDFLARE_R2_SECRET_ACCESS_KEY: "mocksecretaccesskey123"
+      CLOUDFLARE_R2_BUCKET_NAME: "digital-vault-assets"
+      SMTP_HOST: "smtp.mailtrap.io"
+      SMTP_PORT: 2525
+    depends_on:
+      - postgres_db
+
+  # Frontend Next.js Client Service
+  frontend_client:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dv_frontend_client
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: "http://localhost:5000/api"
+      NEXT_PUBLIC_FRONTEND_URL: "http://localhost:3000"
+    depends_on:
+      - backend_api
+
+volumes:
+  postgres_data:

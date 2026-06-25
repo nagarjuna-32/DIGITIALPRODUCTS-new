@@ -1,0 +1,154 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// SQLite does not support native Prisma enums, so we represent them as strings in the model.
+// Roles: "USER", "ADMIN"
+// OrderStatus: "PENDING", "COMPLETED", "FAILED"
+// AccessType: "SINGLE_CATEGORY", "FULL_VAULT"
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  passwordHash  String?        // Nullable for Google Auth users
+  googleId      String?        @unique
+  role          String         @default("USER") // Changed from Role enum
+  isSuspended   Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  orders        Order[]
+  downloads     Download[]
+  reviews       Review[]
+  tickets       SupportTicket[]
+  accessList    UserAccess[]
+}
+
+model Category {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  slug         String        @unique
+  imageUrl     String
+  description  String
+  productCount Int           @default(0)
+  createdAt    DateTime      @default(now())
+  
+  products     Product[]
+  orders       Order[]
+  accessList   UserAccess[]
+}
+
+model Product {
+  id               String      @id @default(uuid())
+  title            String
+  slug             String      @unique
+  description      String
+  fileSize         String
+  fileUrl          String      // Key in Cloudflare R2
+  categoryId       String
+  tags             String      // SQLite does not support scalar lists (String[]), so we store tags and contents as comma-separated strings or JSON.
+  contentsIncluded String      // Changed from String[] to String
+  downloadCount    Int         @default(0)
+  previewImages    String      // Changed from String[] to String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  
+  category         Category    @relation(fields: [categoryId], references: [id])
+  downloads        Download[]
+  reviews          Review[]
+}
+
+model UserAccess {
+  id          String     @id @default(uuid())
+  userId      String
+  accessType  String     // Changed from AccessType enum
+  categoryId  String?    // Nullable if FULL_VAULT
+  orderId     String
+  createdAt   DateTime   @default(now())
+  expiresAt   DateTime?  // Null for lifetime access
+  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category?  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  order       Order      @relation(fields: [orderId], references: [id])
+  
+  @@unique([userId, categoryId])
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  userId            String
+  amount            Float
+  status            String      @default("PENDING") // Changed from OrderStatus enum
+  razorpayOrderId   String      @unique
+  razorpayPaymentId String?     @unique
+  accessType        String      // Changed from AccessType enum
+  categoryId        String?     // If SINGLE_CATEGORY
+  couponCode        String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category          Category?   @relation(fields: [categoryId], references: [id])
+  accessRecords     UserAccess[]
+}
+
+model Download {
+  id         String   @id @default(uuid())
+  userId     String
+  productId  String
+  ipAddress  String
+  userAgent  String
+  downloadedAt DateTime @default(now())
+  
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Coupon {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  discountType  String    // PERCENTAGE or FIXED
+  discountValue Float
+  active        Boolean   @default(true)
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+}
+
+model SupportTicket {
+  id        String   @id @default(uuid())
+  userId    String
+  subject   String
+  message   String
+  status    String   @default("OPEN") // OPEN, CLOSED, IN_PROGRESS
+  replies   String   @default("[]")   // SQLite doesn't natively support Json, so we use string
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  userId    String?
+  ipAddress String
+  details   String
+  createdAt DateTime @default(now())
+}
