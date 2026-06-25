@@ -354,8 +354,8 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-44 flex-grow bg-black">
-        <Loader2 className="h-10 w-10 animate-spin text-white" />
+      <div className="flex justify-center items-center py-44 flex-grow bg-transparent">
+        <Loader2 className="h-10 w-10 animate-spin text-brand-indigo" />
       </div>
     );
   }
@@ -363,19 +363,19 @@ export default function AdminDashboard() {
   if (!user || user.role !== 'ADMIN') return null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 flex-grow bg-black">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 flex-grow bg-transparent text-slate-900">
       
       {/* Header */}
-      <div className="flex justify-between items-center gap-4 mb-10 pb-6 border-b border-white/5">
+      <div className="flex justify-between items-center gap-4 mb-10 pb-6 border-b border-slate-200/50">
         <div>
-          <h1 className="text-xl font-extrabold text-white flex items-center gap-2">
-            <Shield className="h-6 w-6 text-zinc-400" /> Admin Control Panel
+          <h1 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+            <Shield className="h-6 w-6 text-brand-indigo" /> Admin Control Panel
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Manage products archive, categories, user permissions, order lists, and support tickets.</p>
+          <p className="text-xs text-slate-500 mt-0.5 font-bold">Manage products archive, categories, user permissions, order lists, and support tickets.</p>
         </div>
         <button
           onClick={loadAdminTelemetry}
-          className="p-2 rounded-lg border border-white/10 hover:border-white bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+          className="p-2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
         >
           <RefreshCw className="h-4 w-4" />
         </button>
@@ -383,26 +383,26 @@ export default function AdminDashboard() {
 
       {/* Aggregate stats */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
-          <div className="p-4 rounded-xl border border-white/5 bg-[#09090b]/40 text-center">
-            <span className="text-[10px] text-zinc-500 uppercase font-semibold">Total Revenue</span>
-            <p className="text-lg font-bold text-white mt-1">₹{stats.aggregates.totalRevenue.toFixed(0)}</p>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10 text-slate-800">
+          <div className="p-4 rounded-2xl border border-slate-200 bg-white/45 text-center shadow-sm">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Total Revenue</span>
+            <p className="text-lg font-bold text-slate-900 mt-1">₹{stats.aggregates.totalRevenue.toFixed(0)}</p>
           </div>
-          <div className="p-4 rounded-xl border border-white/5 bg-[#09090b]/40 text-center">
-            <span className="text-[10px] text-zinc-500 uppercase font-semibold">Vault Users</span>
-            <p className="text-lg font-bold text-white mt-1">{stats.aggregates.totalUsers}</p>
+          <div className="p-4 rounded-2xl border border-slate-200 bg-white/45 text-center shadow-sm">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Vault Users</span>
+            <p className="text-lg font-bold text-slate-900 mt-1">{stats.aggregates.totalUsers}</p>
           </div>
-          <div className="p-4 rounded-xl border border-white/5 bg-[#09090b]/40 text-center">
-            <span className="text-[10px] text-zinc-500 uppercase font-semibold">Live Elements</span>
-            <p className="text-lg font-bold text-white mt-1">{stats.aggregates.totalProducts}</p>
+          <div className="p-4 rounded-2xl border border-slate-200 bg-white/45 text-center shadow-sm">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Live Elements</span>
+            <p className="text-lg font-bold text-slate-900 mt-1">{stats.aggregates.totalProducts}</p>
           </div>
-          <div className="p-4 rounded-xl border border-white/5 bg-[#09090b]/40 text-center">
-            <span className="text-[10px] text-zinc-500 uppercase font-semibold">Downloads</span>
-            <p className="text-lg font-bold text-zinc-300 mt-1">{stats.aggregates.totalDownloads}</p>
+          <div className="p-4 rounded-2xl border border-slate-200 bg-white/45 text-center shadow-sm">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Downloads</span>
+            <p className="text-lg font-bold text-slate-800 mt-1">{stats.aggregates.totalDownloads}</p>
           </div>
-          <div className="p-4 rounded-xl border border-white/5 bg-[#09090b]/40 text-center">
-            <span className="text-[10px] text-zinc-500 uppercase font-semibold">R2 Storage Size</span>
-            <p className="text-lg font-bold text-zinc-400 mt-1">{stats.aggregates.storageUsageGB} GB</p>
+          <div className="p-4 rounded-2xl border border-slate-200 bg-white/45 text-center shadow-sm">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">R2 Storage Size</span>
+            <p className="text-lg font-bold text-slate-800 mt-1">{stats.aggregates.storageUsageGB} GB</p>
           </div>
         </div>
       )}
@@ -413,44 +413,44 @@ export default function AdminDashboard() {
         <aside className="lg:col-span-3 space-y-1.5">
           <button
             onClick={() => { setActiveTab('analytics'); setActiveTicket(null); }}
-            className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'analytics' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}
+            className={`w-full text-left px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'analytics' ? 'bg-brand-indigo text-white shadow-sm shadow-brand-indigo/15' : 'text-slate-650 hover:bg-slate-100 hover:text-slate-900'}`}
           >
             Dashboard Analytics
           </button>
           <button
             onClick={() => { setActiveTab('products'); setActiveTicket(null); }}
-            className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'products' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}
+            className={`w-full text-left px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'products' ? 'bg-brand-indigo text-white shadow-sm shadow-brand-indigo/15' : 'text-slate-650 hover:bg-slate-100 hover:text-slate-900'}`}
           >
             Product Archives
           </button>
           <button
             onClick={() => { setActiveTab('categories'); setActiveTicket(null); }}
-            className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'categories' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}
+            className={`w-full text-left px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'categories' ? 'bg-brand-indigo text-white shadow-sm shadow-brand-indigo/15' : 'text-slate-650 hover:bg-slate-100 hover:text-slate-900'}`}
           >
             Vault Categories
           </button>
           <button
             onClick={() => { setActiveTab('users'); setActiveTicket(null); }}
-            className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'users' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}
+            className={`w-full text-left px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'users' ? 'bg-brand-indigo text-white shadow-sm shadow-brand-indigo/15' : 'text-slate-650 hover:bg-slate-100 hover:text-slate-900'}`}
           >
             User Suspensions
           </button>
           <button
             onClick={() => { setActiveTab('orders'); setActiveTicket(null); }}
-            className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'orders' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}
+            className={`w-full text-left px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'orders' ? 'bg-brand-indigo text-white shadow-sm shadow-brand-indigo/15' : 'text-slate-650 hover:bg-slate-100 hover:text-slate-900'}`}
           >
             Order Payments
           </button>
           <button
             onClick={() => { setActiveTab('tickets'); setActiveTicket(null); }}
-            className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'tickets' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}
+            className={`w-full text-left px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'tickets' ? 'bg-brand-indigo text-white shadow-sm shadow-brand-indigo/15' : 'text-slate-650 hover:bg-slate-100 hover:text-slate-900'}`}
           >
             Support Tickets
           </button>
         </aside>
 
         {/* Admin Detail Pane */}
-        <main className="lg:col-span-9 p-8 rounded-xl border border-white/5 bg-[#09090b]/40 min-h-[450px]">
+        <main className="lg:col-span-9 p-8 rounded-3xl glass-panel shadow-sm min-h-[450px]">
           
           {/* TAB 1: ANALYTICS */}
           {activeTab === 'analytics' && stats && (

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Sidebar from "@/components/Sidebar";
 import { Suspense } from "react";
 
 const geistSans = Geist({
@@ -57,13 +58,23 @@ export default function RootLayout({
       <head>
         {/* Link for PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#f8fafc" />
       </head>
-      <body className="min-h-full flex flex-col bg-brand-dark text-zinc-100 font-sans">
-        <Suspense fallback={<div className="h-16 border-b border-white/5 bg-brand-dark/60 backdrop-blur-md" />}>
+      <body className="min-h-full flex flex-col bg-brand-dark text-slate-900 font-sans relative overflow-x-hidden">
+        {/* Futuristic Floating Gradient Blobs */}
+        <div className="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-cyan/10 blur-[120px] pointer-events-none animate-blob" style={{ animationDelay: '0s' }} />
+        <div className="fixed top-[45%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-brand-purple/10 blur-[130px] pointer-events-none animate-blob" style={{ animationDelay: '4s' }} />
+        <div className="fixed bottom-[-10%] left-[15%] w-[40vw] h-[40vw] rounded-full bg-brand-indigo/8 blur-[110px] pointer-events-none animate-blob" style={{ animationDelay: '8s' }} />
+
+        {/* Soft glass reflections and grids */}
+        <div className="fixed inset-0 grid-dots pointer-events-none opacity-70" />
+
+        <Sidebar />
+
+        <Suspense fallback={<div className="h-16 border-b border-zinc-200 bg-white/60 backdrop-blur-md" />}>
           <Navbar />
         </Suspense>
-        <main className="flex-grow flex flex-col">
+        <main className="flex-grow flex flex-col relative z-10 md:pl-20">
           {children}
         </main>
         <Footer />
