@@ -48,6 +48,8 @@ export default function AdminDashboard() {
   const [prodTags, setProdTags] = useState('');
   const [prodContents, setProdContents] = useState('');
   const [prodPreview, setProdPreview] = useState('');
+  const [previewKeys, setPreviewKeys] = useState<string[]>([]);
+  const [previewUploading, setPreviewUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<'idle' | 'signing' | 'uploading' | 'completed' | 'failed'>('idle');
 
   // CRUD Category Form States
@@ -176,6 +178,63 @@ export default function AdminDashboard() {
     }
   };
 
+  // Direct to R2 Preview Image Upload handler (supports multiple files)
+  const handlePreviewImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !token) return;
+
+    try {
+      setPreviewUploading(true);
+      const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
+      const uploadedKeys: string[] = [...previewKeys];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+
+        // 1. Get presigned PUT upload URL for this image
+        const res = await fetch(`${API_URL}/admin/generate-upload-url`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ fileName: file.name, fileType: file.type })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Presigned URL generation failed');
+
+        // 2. Upload binary to R2
+        const uploadRes = await fetch(data.uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': file.type },
+          body: file
+        });
+
+        if (!uploadRes.ok) throw new Error(`Image upload failed for ${file.name}`);
+
+        // Store the full public URL or key
+        const imageUrl = R2_PUBLIC_URL ? `${R2_PUBLIC_URL}/${data.key}` : data.key;
+        uploadedKeys.push(imageUrl);
+      }
+
+      setPreviewKeys(uploadedKeys);
+      setProdPreview(uploadedKeys.join(','));
+    } catch (err) {
+      console.error('Preview image upload error:', err);
+    } finally {
+      setPreviewUploading(false);
+      // Reset the input so the same files can be re-selected
+      e.target.value = '';
+    }
+  };
+
+  const handleRemovePreviewImage = (index: number) => {
+    const updated = previewKeys.filter((_, i) => i !== index);
+    setPreviewKeys(updated);
+    setProdPreview(updated.join(','));
+  };
+
   // CRUD: Create or Edit Product Details
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,7 +287,8 @@ export default function AdminDashboard() {
     setProdCategory(p.categoryId);
     setProdTags(p.tags.join(', '));
     setProdContents(p.contentsIncluded.join(', '));
-    setProdPreview(p.previewImages.join(', '));
+    setProdPreview(p.previewImages.join(','));
+    setPreviewKeys(p.previewImages || []);
     setUploadProgress('completed');
     setProdFormOpen(true);
   };
@@ -241,6 +301,8 @@ export default function AdminDashboard() {
     setProdTags('');
     setProdContents('');
     setProdPreview('');
+    setPreviewKeys([]);
+    setPreviewUploading(false);
     setUploadProgress('idle');
   };
 
@@ -637,15 +699,48 @@ export default function AdminDashboard() {
                         className="w-full h-9 px-3 rounded-lg border border-white/10 bg-white/5 text-xs text-zinc-200 focus:outline-none"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-zinc-400 font-semibold">Previews (comma URL separated):</label>
-                      <input
-                        type="text"
-                        placeholder="https://image1.jpg, https://image2.jpg"
-                        value={prodPreview}
-                        onChange={(e) => setProdPreview(e.target.value)}
-                        className="w-full h-9 px-3 rounded-lg border border-white/10 bg-white/5 text-xs text-zinc-200 focus:outline-none"
-                      />
+                    <div className="space-y-1.5 sm:col-span-3">
+                      <label className="text-[10px] text-zinc-400 font-semibold">Preview Images (upload to R2):</label>
+                      <div className="p-3 rounded-lg border border-dashed border-white/10 bg-white/5 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white text-xs font-semibold text-zinc-200 cursor-pointer transition-colors">
+                            <Upload className="h-3.5 w-3.5 text-white" /> Select Images
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={handlePreviewImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                          <span className="text-[10px] text-zinc-500 font-semibold">
+                            {previewUploading ? 'Uploading images to R2...' : `${previewKeys.length} image(s) uploaded`}
+                          </span>
+                        </div>
+                        {previewKeys.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {previewKeys.map((key, idx) => (
+                              <div key={idx} className="relative group">
+                                <div className="w-16 h-16 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                                  <img
+                                    src={key.startsWith('http') ? key : `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL || ''}/${key}`}
+                                    alt={`Preview ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemovePreviewImage(idx)}
+                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
