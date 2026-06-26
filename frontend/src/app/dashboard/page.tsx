@@ -46,17 +46,14 @@ export default function DashboardPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
   const loadDashboardData = async () => {
-    if (!token) return;
+    const activeToken = useAuthStore.getState().token || token;
+    if (!activeToken) return;
     try {
       setLoading(true);
       const [ticketRes, dlRes] = await Promise.all([
-        fetch(`${API_URL}/tickets`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${API_URL}/downloads/history`, { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch(`${API_URL}/tickets`, { headers: { 'Authorization': `Bearer ${activeToken}` } }),
+        fetch(`${API_URL}/downloads/history`, { headers: { 'Authorization': `Bearer ${activeToken}` } })
       ]);
 
       if (ticketRes.ok) {
@@ -75,14 +72,17 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (!isAuthenticated && !loading) {
-      router.push('/auth/login?redirect=/dashboard');
-      return;
-    }
-    if (token) {
-      loadDashboardData();
-    }
-  }, [isAuthenticated, token, loading, router]);
+    const runAuthCheck = async () => {
+      await initialize();
+      const current = useAuthStore.getState();
+      if (!current.isAuthenticated) {
+        router.push('/auth/login?redirect=/dashboard');
+      } else {
+        await loadDashboardData();
+      }
+    };
+    runAuthCheck();
+  }, [initialize, router]);
 
   // Create support ticket handler
   const handleCreateTicket = async (e: React.FormEvent) => {
