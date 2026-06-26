@@ -7,6 +7,47 @@ import { downloadLimiter } from '../middleware/rateLimit';
 const router = Router();
 
 /**
+ * @route   GET /downloads/history
+ * @desc    Return the authenticated user's download history
+ */
+router.get('/history', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id;
+
+    const downloads = await prisma.download.findMany({
+      where: { userId },
+      include: {
+        product: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            fileSize: true,
+            category: { select: { name: true } }
+          }
+        }
+      },
+      orderBy: { downloadedAt: 'desc' },
+      take: 50
+    });
+
+    const history = downloads.map(d => ({
+      id: d.id,
+      productId: d.productId,
+      productTitle: d.product.title,
+      productSlug: d.product.slug,
+      fileSize: d.product.fileSize,
+      categoryName: d.product.category?.name || 'Unknown',
+      downloadedAt: d.downloadedAt,
+    }));
+
+    res.json({ history });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * @route   GET /downloads/request/:productId
  * @desc    Verify purchase authorization and return a secure presigned Cloudflare R2 download URL
  */
