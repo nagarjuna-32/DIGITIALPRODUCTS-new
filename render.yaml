@@ -1,9 +1,3 @@
-databases:
-  - name: digital-vault-db
-    databaseName: digital_vault
-    user: postgres
-    plan: free
-
 services:
   # Backend API Web Service
   - type: web
@@ -14,24 +8,20 @@ services:
     buildCommand: npm install && npx prisma generate && npm run build
     startCommand: npx prisma db push && npm run start
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: digital-vault-db
-          property: connectionString
       - key: PORT
         value: 5000
       - key: JWT_SECRET
         generateValue: true
+      - key: DATABASE_URL
+        sync: false # User will provide Neon/Supabase connection string
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: digital-vault-frontend
-          property: host
-      # User credentials (Render will prompt for these on Blueprint setup)
+        sync: false # User will provide Vercel deployment URL
+      # Razorpay
       - key: RAZORPAY_KEY_ID
         sync: false
       - key: RAZORPAY_KEY_SECRET
         sync: false
+      # Cloudflare R2
       - key: CLOUDFLARE_R2_ACCOUNT_ID
         sync: false
       - key: CLOUDFLARE_R2_ACCESS_KEY_ID
@@ -42,6 +32,7 @@ services:
         sync: false
       - key: CLOUDFLARE_R2_PUBLIC_URL
         sync: false
+      # SMTP
       - key: SMTP_HOST
         value: smtp.mailtrap.io
       - key: SMTP_PORT
@@ -52,19 +43,3 @@ services:
         sync: false
       - key: SMTP_FROM
         value: '"Digital Vault" <noreply@digitalvault.com>'
-
-  # Frontend Next.js Web Service
-  - type: web
-    name: digital-vault-frontend
-    env: node
-    plan: free
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
-    envVars:
-      - key: PORT
-        value: 3000
-      - key: NEXT_PUBLIC_API_URL
-        sync: false
-      - key: NEXT_PUBLIC_FRONTEND_URL
-        sync: false
