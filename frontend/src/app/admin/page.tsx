@@ -512,7 +512,7 @@ export default function AdminDashboard() {
         </aside>
 
         {/* Admin Detail Pane */}
-        <main className="lg:col-span-9 p-8 rounded-3xl glass-panel shadow-sm min-h-[450px]">
+        <main className="lg:col-span-9 p-8 rounded-3xl bg-[#0f172a] border border-slate-850 shadow-xl min-h-[450px] text-white">
           
           {/* TAB 1: ANALYTICS */}
           {activeTab === 'analytics' && stats && (

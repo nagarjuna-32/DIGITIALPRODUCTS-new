@@ -37,7 +37,7 @@ app.use('/api', apiLimiter);
 app.get('/api/health', async (req, res) => {
   try {
     // Basic DB check
-    await prisma.$executeRaw`SELECT 1`;
+    await prisma.category.findFirst();
     res.json({
       status: 'UP',
       database: 'CONNECTED',

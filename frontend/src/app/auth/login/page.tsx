@@ -90,7 +90,7 @@ function LoginContent() {
   };
 
   return (
-    <div className="flex-grow flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 relative grid-dots">
+    <div className="flex-grow flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 relative grid-dots bg-slate-950 text-white min-h-[calc(100vh-4rem)]">
       {/* Glow ambient background */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] bg-brand-purple/10 rounded-full blur-[80px] pointer-events-none" />
 
